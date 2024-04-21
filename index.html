@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="file" id="img" name="img" />
+    <button id="load">Load</button> 
+    <img id="target-img" />
+    <script type="module"> 
+        import init, { decode, mipmap_count } from "./pkg/dds_wasm.js";
+
+        document.getElementById("load").onclick = () => {
+            var startTime = performance.now();
+            var file = document.getElementById("img").files[0];
+            if(!file) return;
+
+            file.arrayBuffer().then((buffer) => {
+                init().then(async () => {
+                    let i8Array = new Int8Array(buffer);
+                    const mm_count = mipmap_count(i8Array);
+                    console.log(mm_count);
+                    let u8 = decode(i8Array, 0);
+
+                    const b64encoded = await encode_b64(u8);
+
+                    document.getElementById("target-img").src = "data:image/webp;base64," + b64encoded;
+                    var endTime = performance.now();
+                    console.log(`Decoding the image took ${endTime - startTime} milliseconds`);
+                });
+            });
+        }
+
+        async function encode_b64(buffer) {
+            return await new Promise(r => {
+                const reader = new FileReader()
+                reader.onload = () => {
+                    const b64 = reader.result.slice(reader.result.indexOf(",") + 1);
+                    r(b64);
+                }
+                reader.readAsDataURL(new Blob([buffer]))
+            });
+        }
+    </script>
+</body>
+</html>
