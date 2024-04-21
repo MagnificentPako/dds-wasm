@@ -22,7 +22,7 @@ jobs:
     - name: Build
       run: wasm-pack build --target web
     - name: Publish
-    - uses: JS-DevTools/npm-publish@v3
+      uses: JS-DevTools/npm-publish@v3
       with:
         token: ${{ secrets.NPM_TOKEN }}
         package: "./pkg"
